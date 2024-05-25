@@ -26,7 +26,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-
+registered_vens/vens.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
