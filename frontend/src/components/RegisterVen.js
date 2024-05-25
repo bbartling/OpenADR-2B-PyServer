@@ -7,15 +7,24 @@ const RegisterVen = ({ fetchAllVens }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Submitting VEN name:', venName);  // Log the submitted VEN name
     try {
       const response = await axios.post('http://127.0.0.1:8080/api/ven', { venName });
+      console.log('Server response:', response.data);  // Log the server response
       setResult({ status: response.data.status, message: response.data.message });
       if (fetchAllVens) {
-        fetchAllVens(); // Refresh the VEN list if fetchAllVens is available
+        fetchAllVens();  // Refresh the VEN list if fetchAllVens is available
       }
     } catch (error) {
       console.error('Error registering VEN:', error);
-      setResult({ status: 'error', message: 'Failed to register VEN. Please try again.' });
+      if (error.response && error.response.data) {
+        // Server responded with a status other than 2xx
+        console.error('Server error response:', error.response.data);
+        setResult({ status: 'error', message: error.response.data.message || 'Failed to register VEN. Please try again.' });
+      } else {
+        // Network or other error
+        setResult({ status: 'error', message: 'Failed to register VEN. Please try again.' });
+      }
     }
   };
 

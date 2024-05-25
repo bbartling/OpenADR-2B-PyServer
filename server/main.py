@@ -27,6 +27,16 @@ async def on_create_party_registration(registration_info):
         print(f"An unknown VEN tried to connect: {ven_name}")
     return False
 
+async def on_cancel_party_registration(payload):
+    ven_id = payload['ven_id']
+    try:
+        ven_info = VEN_REGISTRY.get_ven_info_from_id(ven_id)
+        VEN_REGISTRY.remove_ven(ven_info.ven_name)
+        print(f"VEN {ven_info.ven_name} with ID {ven_id} has been deregistered.")
+    except UnknownVenError:
+        print(f"Attempted to deregister unknown VEN with ID {ven_id}")
+    return None
+
 async def on_register_report(
     ven_id,
     resource_id,
@@ -58,6 +68,20 @@ async def event_response_callback(ven_id, event_id, opt_type):
 
 async def event_delivery_callback(ven_id, event_id):
     print(f"Event {event_id} delivered to VEN {ven_id}")
+
+async def on_request_event(ven_id):
+    """
+    Custom handler to provide events for a VEN when it requests them.
+    """
+    # Here, you can add logic to determine which events should be sent to the VEN
+    events = VEN_REGISTRY.get_events_for_ven(ven_id)  # Assuming you have this method implemented
+    return events
+
+async def on_created_event(ven_id, event_id, opt_type):
+    """
+    Custom handler to process the response from a VEN when they acknowledge the receipt of an event.
+    """
+    print(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
 
 async def handle_event_post(request):
     payload = await request.json()
@@ -106,12 +130,28 @@ async def handle_event_post(request):
         print(f"Error: VEN {ven_name} not found")
         raise web.HTTPNotFound(text=f"VEN {ven_name} not found")
 
+    # Check for existing events with the same parameters
+    existing_events = request.app["server"].events.get(ven.ven_id, [])
+    for event in existing_events:
+        existing_signal_name = event.event_signals[0].signal_name
+        existing_signal_type = event.event_signals[0].signal_type
+        existing_intervals = event.event_signals[0].intervals
+
+        # Compare event details
+        if (existing_signal_name == signal_name and
+            existing_signal_type == signal_type and
+            existing_intervals == intervals):
+            print(f"Duplicate event detected for VEN {ven.ven_id}. Event not added.")
+            return web.json_response({"status": "error", "message": "Duplicate event detected. Event not added."}, status=400)
+
+    # If no duplicates found, add the event
     event_id = request.app["server"].add_event(
         ven.ven_id, signal_name, signal_type, intervals, callback=event_response_callback, delivery_callback=event_delivery_callback
     )
 
     print(f"Sent event to {ven_name}: {signal_name} ({signal_type})")
     return web.json_response({"status": "success", "message": f"Event sent to {ven_name}", "event_id": event_id})
+
 
 async def handle_ven_post(request):
     payload = await request.json()
@@ -121,25 +161,34 @@ async def handle_ven_post(request):
     try:
         VEN_REGISTRY.add_ven(ven_name)
         print(f'VEN {ven_name} added successfully.')
-        return web.json_response({"status": "success", "ven_name": ven_name})
+        return web.json_response({"status": "success", "message": f"VEN {ven_name} added successfully"})
     except DuplicateVenError:
         print(f'VEN {ven_name} already registered.')
         return web.json_response({"status": "error", "message": "VEN already registered"}, status=400)
 
 async def handle_list_all_events(request):
     events_list = []
-    print("Listing all events...")
     try:
         for ven_id, events in request.app["server"].events.items():
-            print(f"VEN ID: {ven_id}, Events: {events}")
             for event in events:
                 event_id = event.event_descriptor.event_id
                 event_name = event.event_signals[0].signal_name
                 event_type = event.event_signals[0].signal_type
                 event_start = event.active_period['dtstart']
                 event_duration = event.active_period['duration']
+
+                try:
+                    ven_info = VEN_REGISTRY.get_ven_info_from_id(ven_id)
+                    ven_name = ven_info.ven_name
+                except UnknownVenError:
+                    ven_name = "Unknown VEN"
+
+                # Print the specific details on a single line
+                print(f"EVENTS - {ven_name}, Event Start: {event_start}, Event Duration: {event_duration}, Signal Type: {event_type}")
+
                 events_list.append({
                     "ven_id": ven_id,
+                    "ven_name": ven_name,
                     "event_id": event_id,
                     "event_name": event_name,
                     "event_type": event_type,
@@ -159,10 +208,10 @@ async def handle_cancel_event(request):
     if not ven_id or not event_id:
         raise web.HTTPBadRequest(text="Missing ven_id or event_id")
 
+    # Cancel the event using OpenADRServer's method
     request.app["server"].cancel_event(ven_id, event_id)
     print(f"Cancelled event {event_id} for VEN {ven_id}")
     return web.json_response({"status": "success", "message": f"Event {event_id} cancelled for VEN {ven_id}"})
-
 
 async def handle_remove_ven(request):
     payload = await request.json()
@@ -181,8 +230,7 @@ async def handle_remove_ven(request):
 
 async def handle_list_vens(request):
     ven_list = VEN_REGISTRY.get_all_vens()
-    return web.json_response([{"ven_name": ven.ven_name} for ven in ven_list])
-
+    return web.json_response([{"ven_name": ven.ven_name, "ven_id": ven.ven_id, "registration_id": ven.registration_id} for ven in ven_list])
 
 # Create the OpenADRServer instance
 server = OpenADRServer(
@@ -191,7 +239,10 @@ server = OpenADRServer(
 
 # Add the handlers for VEN registrations and reports
 server.add_handler("on_create_party_registration", on_create_party_registration)
+server.add_handler("on_cancel_party_registration", on_cancel_party_registration)
 server.add_handler("on_register_report", on_register_report)
+server.add_handler("on_request_event", on_request_event)
+server.add_handler("on_created_event", on_created_event)
 
 # Set up CORS and routes for handling VEN and event operations
 cors = aiohttp_cors.setup(

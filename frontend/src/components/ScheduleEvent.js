@@ -24,7 +24,7 @@ const ScheduleEvent = () => {
       setResult({ status: 'success', message: `Event scheduled successfully for VEN ${formData.venName}.` });
     } catch (error) {
       console.error('Error:', error);
-      if (error.response && error.response.data.message) {
+      if (error.response && error.response.data && error.response.data.message) {
         setResult({ status: 'error', message: error.response.data.message });
       } else {
         setResult({ status: 'error', message: 'An error occurred while scheduling the event.' });

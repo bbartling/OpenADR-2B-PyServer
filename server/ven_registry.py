@@ -3,9 +3,7 @@ import uuid
 from collections import namedtuple
 from pathlib import Path
 
-VenInfo = namedtuple(
-    "VenInfo", ["ven_name", "ven_id", "registration_id"]
-)
+VenInfo = namedtuple("VenInfo", ["ven_name", "ven_id", "registration_id"])
 
 class DuplicateVenError(Exception):
     """Raised when adding a duplicate VEN to the registry."""
@@ -74,4 +72,4 @@ class VenRegistry:
         self.save_to_file()
 
     def get_all_vens(self):
-        return list(self.vens.values())
+        return list(self._vens.values())  # Corrected this line
