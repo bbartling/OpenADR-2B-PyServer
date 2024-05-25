@@ -17,13 +17,13 @@ const ScheduleEvent = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('Scheduling Event with Data:', formData);  // Debugging print
+    console.log('Scheduling Event with Data:', formData);
     try {
       const response = await axios.post('http://127.0.0.1:8080/api/event', formData);
-      console.log('Response:', response.data);  // Debugging print
+      console.log('Response:', response.data);
       setResult({ status: 'success', message: `Event scheduled successfully for VEN ${formData.venName}.` });
     } catch (error) {
-      console.error('Error:', error);  // Debugging print
+      console.error('Error:', error);
       if (error.response && error.response.data.message) {
         setResult({ status: 'error', message: error.response.data.message });
       } else {

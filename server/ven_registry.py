@@ -66,3 +66,12 @@ class VenRegistry:
         with open(self._filename, mode="r") as file:
             vens = json.load(file)
             self._vens = {k: VenInfo(**v) for k, v in vens.items()}
+
+    def remove_ven(self, ven_name):
+        if ven_name not in self._vens:
+            raise UnknownVenError(f"VEN {ven_name} not found")
+        del self._vens[ven_name]
+        self.save_to_file()
+
+    def get_all_vens(self):
+        return list(self.vens.values())

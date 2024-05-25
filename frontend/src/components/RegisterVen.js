@@ -1,24 +1,21 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const RegisterVen = () => {
+const RegisterVen = ({ fetchAllVens }) => {
   const [venName, setVenName] = useState('');
   const [result, setResult] = useState(null);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    console.log('Registering VEN:', venName);  // Debugging print
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       const response = await axios.post('http://127.0.0.1:8080/api/ven', { venName });
-      console.log('Response:', response.data);  // Debugging print
-      setResult({ status: 'success', message: `VEN ${venName} registered successfully.` });
-    } catch (error) {
-      console.error('Error:', error);  // Debugging print
-      if (error.response && error.response.data.message === "VEN already registered") {
-        setResult({ status: 'error', message: `VEN ${venName} is already registered.` });
-      } else {
-        setResult({ status: 'error', message: 'An error occurred while registering the VEN.' });
+      setResult({ status: response.data.status, message: response.data.message });
+      if (fetchAllVens) {
+        fetchAllVens(); // Refresh the VEN list if fetchAllVens is available
       }
+    } catch (error) {
+      console.error('Error registering VEN:', error);
+      setResult({ status: 'error', message: 'Failed to register VEN. Please try again.' });
     }
   };
 
@@ -27,26 +24,21 @@ const RegisterVen = () => {
       <h1 className="text-center">Register VEN</h1>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="venName">VEN Name</label>
-          <input
-            type="text"
-            id="venName"
-            name="venName"
-            className="form-control"
-            value={venName}
-            onChange={(e) => setVenName(e.target.value)}
-            required
+          <input 
+            type="text" 
+            className="form-control" 
+            value={venName} 
+            onChange={(e) => setVenName(e.target.value)} 
+            placeholder="Enter VEN name" 
           />
         </div>
-        <button type="submit" className="btn btn-primary mt-3">Register VEN</button>
+        <button type="submit" className="btn btn-primary">Register VEN</button>
       </form>
-      <div className="result mt-3">
-        {result && (
-          <div className={`alert ${result.status === 'success' ? 'alert-success' : 'alert-danger'}`}>
-            {result.message}
-          </div>
-        )}
-      </div>
+      {result && (
+        <div className={`alert mt-3 ${result.status === 'success' ? 'alert-success' : 'alert-danger'}`}>
+          {result.message}
+        </div>
+      )}
     </div>
   );
 };

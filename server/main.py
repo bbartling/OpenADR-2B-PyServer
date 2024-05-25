@@ -19,9 +19,6 @@ VEN_REGISTRY = VenRegistry(
 )
 
 async def on_create_party_registration(registration_info):
-    """
-    Inspect the registration info and return a ven_id and registration_id.
-    """
     ven_name = registration_info["ven_name"]
     try:
         ven_info = VEN_REGISTRY.get_ven_info_from_name(ven_name)
@@ -39,9 +36,6 @@ async def on_register_report(
     min_sampling_interval,
     max_sampling_interval,
 ):
-    """
-    Inspect a report offering from the VEN and return a callback and sampling interval for receiving the reports.
-    """
     callback = partial(
         on_update_report,
         ven_id=ven_id,
@@ -52,9 +46,6 @@ async def on_register_report(
     return callback, sampling_interval
 
 async def on_update_report(data, ven_id, resource_id, measurement):
-    """
-    Callback that receives report data from the VEN and handles it.
-    """
     print("on update report")
     print(data)
     for time, value in data:
@@ -63,18 +54,14 @@ async def on_update_report(data, ven_id, resource_id, measurement):
         )
 
 async def event_response_callback(ven_id, event_id, opt_type):
-    """
-    Callback that receives the response from a VEN to an Event.
-    """
     print(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
 
+async def event_delivery_callback(ven_id, event_id):
+    print(f"Event {event_id} delivered to VEN {ven_id}")
+
 async def handle_event_post(request):
-    """
-    Handler for a POST request to `/api/event`
-    """
-    # Parse request payload
     payload = await request.json()
-    print('Received Event Payload:', payload)  # Debugging print
+    print('Received Event Payload:', payload)
     ven_name = payload.get("venName")
     if not ven_name:
         print("Error: Missing venName")
@@ -92,12 +79,11 @@ async def handle_event_post(request):
     intervals = [
         {
             "dtstart": datetime.strptime(start_time, "%Y-%m-%dT%H:%M").replace(tzinfo=timezone.utc),
-            "duration": timedelta(minutes=int(duration)),  # Ensure duration is an integer
+            "duration": timedelta(minutes=int(duration)),
             "signal_payload": 1,
         }
     ]
 
-    # Verify payload
     if signal_name not in ["SIMPLE", "ELECTRICITY_PRICE", "LOAD_DISPATCH"]:
         print(f"Error: Unknown name {signal_name}")
         raise web.HTTPBadRequest(text=f"Unknown name {signal_name}")
@@ -112,55 +98,102 @@ async def handle_event_post(request):
     ]:
         print(f"Error: Unknown type {signal_type}")
         raise web.HTTPBadRequest(text=f"Unknown type {signal_type}")
-    # TODO: verify intervals
 
-    # Send this event to the VEN
     try:
         ven = VEN_REGISTRY.get_ven_info_from_name(ven_name)
-        print(f'VEN found: {ven}')  # Debugging print
+        print(f'VEN found: {ven}')
     except UnknownVenError:
         print(f"Error: VEN {ven_name} not found")
         raise web.HTTPNotFound(text=f"VEN {ven_name} not found")
 
-    request.app["server"].add_event(
-        ven.ven_id, signal_name, signal_type, intervals
+    event_id = request.app["server"].add_event(
+        ven.ven_id, signal_name, signal_type, intervals, callback=event_response_callback, delivery_callback=event_delivery_callback
     )
 
     print(f"Sent event to {ven_name}: {signal_name} ({signal_type})")
-    return web.json_response({"status": "success", "message": f"Event sent to {ven_name}"})
+    return web.json_response({"status": "success", "message": f"Event sent to {ven_name}", "event_id": event_id})
 
 async def handle_ven_post(request):
-    """
-    Handler for a POST request to `/api/ven`
-    """
-    # Parse request payload
     payload = await request.json()
-    print('Received VEN Payload:', payload)  # Debugging print
+    print('Received VEN Payload:', payload)
     ven_name = payload["venName"]
 
     try:
         VEN_REGISTRY.add_ven(ven_name)
-        print(f'VEN {ven_name} added successfully.')  # Debugging print
+        print(f'VEN {ven_name} added successfully.')
         return web.json_response({"status": "success", "ven_name": ven_name})
     except DuplicateVenError:
-        print(f'VEN {ven_name} already registered.')  # Debugging print
+        print(f'VEN {ven_name} already registered.')
         return web.json_response({"status": "error", "message": "VEN already registered"}, status=400)
 
-# Create the server object
+async def handle_list_all_events(request):
+    events_list = []
+    print("Listing all events...")
+    try:
+        for ven_id, events in request.app["server"].events.items():
+            print(f"VEN ID: {ven_id}, Events: {events}")
+            for event in events:
+                event_id = event.event_descriptor.event_id
+                event_name = event.event_signals[0].signal_name
+                event_type = event.event_signals[0].signal_type
+                event_start = event.active_period['dtstart']
+                event_duration = event.active_period['duration']
+                events_list.append({
+                    "ven_id": ven_id,
+                    "event_id": event_id,
+                    "event_name": event_name,
+                    "event_type": event_type,
+                    "event_start": event_start.isoformat(),
+                    "event_duration": event_duration.total_seconds() / 60
+                })
+        return web.json_response(events_list)
+    except Exception as e:
+        print(f"Error listing events: {e}")
+        raise web.HTTPInternalServerError(text=str(e))
+
+async def handle_cancel_event(request):
+    payload = await request.json()
+    ven_id = payload.get("ven_id")
+    event_id = payload.get("event_id")
+
+    if not ven_id or not event_id:
+        raise web.HTTPBadRequest(text="Missing ven_id or event_id")
+
+    request.app["server"].cancel_event(ven_id, event_id)
+    print(f"Cancelled event {event_id} for VEN {ven_id}")
+    return web.json_response({"status": "success", "message": f"Event {event_id} cancelled for VEN {ven_id}"})
+
+
+async def handle_remove_ven(request):
+    payload = await request.json()
+    ven_name = payload.get("venName")
+
+    if not ven_name:
+        raise web.HTTPBadRequest(text="Missing venName")
+
+    try:
+        VEN_REGISTRY.remove_ven(ven_name)
+        print(f"Removed VEN {ven_name} successfully.")
+        return web.json_response({"status": "success", "message": f"VEN {ven_name} removed successfully"})
+    except UnknownVenError:
+        print(f"VEN {ven_name} not found.")
+        return web.json_response({"status": "error", "message": f"VEN {ven_name} not found"}, status=404)
+
+async def handle_list_vens(request):
+    ven_list = VEN_REGISTRY.get_all_vens()
+    return web.json_response([{"ven_name": ven.ven_name} for ven in ven_list])
+
+
+# Create the OpenADRServer instance
 server = OpenADRServer(
     vtn_id="bens_vtn",
-    # cert="server_certificate.crt",
-    # key="server_private_key.pem",
-    # passphrase=os.getenv("SERVER_KEY_PASSPHRASE"),
-    # ven_lookup=lambda ven_id: VEN_REGISTRY.get_ven_info_from_id(ven_id)._asdict(),
 )
 
-# Add the handler for client (VEN) registrations
+# Add the handlers for VEN registrations and reports
 server.add_handler("on_create_party_registration", on_create_party_registration)
-
-# Add the handler for report registrations from the VEN
 server.add_handler("on_register_report", on_register_report)
 
+# Set up CORS and routes for handling VEN and event operations
 cors = aiohttp_cors.setup(
     server.app,
     defaults={
@@ -172,14 +205,26 @@ cors = aiohttp_cors.setup(
     },
 )
 
-# Add all resources to `CorsConfig`.
+# Add routes to the server
 resource = cors.add(server.app.router.add_resource("/api/ven"))
 cors.add(resource.add_route("POST", handle_ven_post))
 
 resource = cors.add(server.app.router.add_resource("/api/event"))
 cors.add(resource.add_route("POST", handle_event_post))
 
-# Run the server on the asyncio event loop
+resource = cors.add(server.app.router.add_resource("/api/all_events"))
+cors.add(resource.add_route("GET", handle_list_all_events))
+
+resource = cors.add(server.app.router.add_resource("/api/cancel_event"))
+cors.add(resource.add_route("POST", handle_cancel_event))
+
+resource = cors.add(server.app.router.add_resource("/api/remove_ven"))
+cors.add(resource.add_route("POST", handle_remove_ven))
+
+resource = cors.add(server.app.router.add_resource("/api/list_vens"))
+cors.add(resource.add_route("GET", handle_list_vens))
+
+# Run the server
 loop = asyncio.new_event_loop()
 loop.create_task(server.run())
 loop.run_forever()

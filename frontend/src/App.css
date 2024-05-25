@@ -1,6 +1,20 @@
+
+/* Additional styles to ensure proper layout */
 .App {
   text-align: center;
 }
+
+.main-content {
+  padding: 20px;
+}
+
+/* Ensure no large, unwanted elements */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
 
 .App-logo {
   height: 40vmin;
@@ -110,4 +124,32 @@ button:hover {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
+}
+
+.table-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.table-centered {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
