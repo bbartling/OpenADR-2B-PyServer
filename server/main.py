@@ -66,8 +66,6 @@ async def on_update_report(data, ven_id, resource_id, measurement):
 async def event_response_callback(ven_id, event_id, opt_type):
     print(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
 
-async def event_delivery_callback(ven_id, event_id):
-    print(f"Event {event_id} delivered to VEN {ven_id}")
 
 async def on_request_event(ven_id):
     """
@@ -146,9 +144,8 @@ async def handle_event_post(request):
 
     # If no duplicates found, add the event
     event_id = request.app["server"].add_event(
-        ven.ven_id, signal_name, signal_type, intervals, callback=event_response_callback, delivery_callback=event_delivery_callback
+        ven.ven_id, signal_name, signal_type, intervals, callback=event_response_callback
     )
-
     print(f"Sent event to {ven_name}: {signal_name} ({signal_type})")
     return web.json_response({"status": "success", "message": f"Event sent to {ven_name}", "event_id": event_id})
 

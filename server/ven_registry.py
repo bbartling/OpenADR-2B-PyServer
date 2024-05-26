@@ -72,4 +72,4 @@ class VenRegistry:
         self.save_to_file()
 
     def get_all_vens(self):
-        return list(self._vens.values())  # Corrected this line
+        return list(self._vens.values())
