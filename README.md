@@ -2,19 +2,30 @@
 OpenADR-PenTest-Lab is a testbed for learning web app penetration testing in Open Automated Demand Response (OpenADR) systems. It provides a realistic environment for security enthusiasts to practice pen testing on a Virtual Top Node (VTN) server for demand response applications, grid-interactive efficient buildings (GEB), and OpenADR protocols.
 
 ## Web App Interface
-The server used to configure demand response events is made with React which communicates to the Python backend that runs `aiohttp` and the `openleadr` OpenAdr 2.0 stack under the hood.
-![Alt text](/images/app_gui.JPG)
+The interface on the demand response server used to configure demand response events is made with React which then communicates to the Python backend. The Python backend runs [openleadr](https://openleadr.org/docs/) project under the hood which is a Python based OpenAdr 2.0 library.
+
+<details>
+  <summary>Web App Interface Screenshot</summary>
+    ![Alt text](/images/app_gui.JPG)
+</details>
 
 ## Project goals
 These are some basic goals to make this into an interactive Pen test lab for demand response.
  - [x] create basic Python Virtual Top Node (VTN) app
  - [x] create basic React based interface for the GUI
  - [x] test VTN and React interface with a `localhost` OpenADR client
+ - [x] make a communications diagram for project
  - [ ] make a login page for the VTN server
  - [ ] deploy on the internet and test remote OpenAdr client
  - [ ] start the fun stuff and make some Pen Testing script : )
 
-## Project goals
+ ## Communications schematic
+ <details>
+  <summary>Communications Diagram</summary>
+    ![Alt text](/images/schematic.JPG)
+</details>
+
+## Contributing
 Please submit a git issue or discussion on tips, tricks, and best practices...this project is to learn Web App pen testing which is a new avenue for me to venture down.
 
 ## License
