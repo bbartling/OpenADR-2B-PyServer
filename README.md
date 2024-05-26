@@ -6,7 +6,7 @@ The interface on the demand response server used to configure demand response ev
 
 <details>
   <summary>Web App Interface Screenshot</summary>
-    ![Alt text](/images/app_gui.JPG)
+  ![Alt text](/images/app_gui.JPG)
 </details>
 
 ## Project goals
@@ -19,10 +19,10 @@ These are some basic goals to make this into an interactive Pen test lab for dem
  - [ ] deploy on the internet and test remote OpenAdr client
  - [ ] start the fun stuff and make some Pen Testing script : )
 
- ## Communications schematic
- <details>
+## Communications schematic
+<details>
   <summary>Communications Diagram</summary>
-    ![Alt text](/images/schematic.png)
+  ![Alt text](/images/schematic.png)
 </details>
 
 ## Contributing
