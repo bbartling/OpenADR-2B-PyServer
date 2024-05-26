@@ -22,7 +22,7 @@ These are some basic goals to make this into an interactive Pen test lab for dem
  ## Communications schematic
  <details>
   <summary>Communications Diagram</summary>
-    ![Alt text](/images/schematic.JPG)
+    ![Alt text](/images/schematic.png)
 </details>
 
 ## Contributing
