@@ -6,6 +6,8 @@ The interface on the demand response server used to configure demand response ev
 
 <details>
   <summary>Web App Interface Screenshot</summary>
+
+React Interace
 ![Alt text](/images/app_gui.JPG)
 </details>
 
@@ -22,6 +24,8 @@ These are some basic goals to make this into an interactive Pen test lab for dem
 ## Communications schematic
 <details>
   <summary>Communications Diagram</summary>
+
+Plant UML
 ![Alt text](/images/schematic.png)
 </details>
 
