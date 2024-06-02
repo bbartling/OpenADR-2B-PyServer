@@ -8,11 +8,11 @@ Security is a top priority for OpenADR-2B-PyServer. The server uses HTTPS for en
 This project uses the [OpenLEADR](https://openleadr.org/) library for OpenADR 2.0B communication
 
 Key Features
-* `OpenADR 2.0B Specification Compliance`: Adheres to the OpenADR 2.0B standard via OPENLEADR, ensuring compatibility with a wide range of VEN (Virtual End Node) devices.
-* `Secure Communication`: Implements HTTPS for secure communication between the VTN (Virtual Top Node) server, ADR app user, and VEN devices.
-* `MIT Licensed`: Distributed under the MIT license, allowing for free use, modification, and distribution.
-* `Scalability`: Designed to handle multiple VEN connections efficiently, making it suitable for both small-scale and large-scale ADR deployments.
-* `Easy to Use`: Provides a straightforward setup process and comprehensive documentation to get you started quickly.
+* **OpenADR 2.0B Specification Compliance**: Adheres to the OpenADR 2.0B standard via OPENLEADR, ensuring compatibility with a wide range of VEN (Virtual End Node) devices.
+* **Secure Communication**: Implements HTTPS for secure communication between the VTN (Virtual Top Node) server, ADR app user, and VEN devices.
+* **MIT Licensed**: Distributed under the MIT license, allowing for free use, modification, and distribution.
+* **Scalability**: Designed to handle multiple VEN connections efficiently, making it suitable for both small-scale and large-scale ADR deployments.
+* **Easy to Use**: Provides a straightforward setup process and comprehensive documentation to get you started quickly.
 
 ## Web App GUI
 ```
@@ -20,9 +20,9 @@ Key Features
 <details>
   <summary>Web App Interface Screenshot</summary>
 
-![Alt text](/images/app_gui.JPG)
-![Alt text](/images/schematic.png)
-![Alt text](/images/ven_status.JPG)
+  ![Alt text](/images/app_gui.JPG)
+  ![Alt text](/images/schematic.png)
+  ![Alt text](/images/ven_status.JPG)
 </details>
 ```
 
@@ -35,6 +35,7 @@ These are some basic goals to make this into an interactive Pen test lab for dem
  - [ ] make a login page for the VTN server
  - [ ] add to GUI features for VEN client off/online status and last meter reading value
  - [ ] revise GUI to show VEN name instead of VEN ID
+ - [ ] add Docker container support
  - [ ] deploy on the internet and test remote OpenAdr client
  - [ ] deploy on open sourced bug bounty program for research purposes on making ADR servers most secure as possible
 
