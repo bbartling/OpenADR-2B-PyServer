@@ -25,7 +25,7 @@ const ListVens: React.FC<ListVensProps> = ({ vens, fetchAllVens }) => {
   };
 
   return (
-    <div className="container mt-4 table-container">
+    <div className="container mt-4">
       <h1 className="text-center">View and Remove VENs</h1>
       <div className="result mt-3">
         {result && (
@@ -35,26 +35,28 @@ const ListVens: React.FC<ListVensProps> = ({ vens, fetchAllVens }) => {
         )}
       </div>
       {vens.length > 0 ? (
-        <table className="table mt-4 table-centered">
-          <thead>
-            <tr>
-              <th>VEN Name</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vens.map(ven => (
-              <tr key={ven.ven_name}>
-                <td>{ven.ven_name}</td>
-                <td>
-                  <button className="btn btn-danger" onClick={() => handleRemove(ven.ven_name)}>
-                    Remove
-                  </button>
-                </td>
+        <div className="table-container">
+          <table className="table mt-4 table-centered">
+            <thead>
+              <tr>
+                <th>VEN Name</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {vens.map(ven => (
+                <tr key={ven.ven_name}>
+                  <td>{ven.ven_name}</td>
+                  <td>
+                    <button className="btn btn-danger" onClick={() => handleRemove(ven.ven_name)}>
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p>No VENs found.</p>
       )}

@@ -61,36 +61,38 @@ const ViewEvents: React.FC = () => {
         )}
       </div>
       {events.length > 0 ? (
-        <table className="table mt-4 table-centered">
-          <thead>
-            <tr>
-              <th>VEN ID</th>
-              <th>Event ID</th>
-              <th>Event Name</th>
-              <th>Event Type</th>
-              <th>Start Time</th>
-              <th>Duration (minutes)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.map(event => (
-              <tr key={event.event_id}>
-                <td>{event.ven_id}</td>
-                <td>{event.event_id}</td>
-                <td>{event.event_name}</td>
-                <td>{event.event_type}</td>
-                <td>{new Date(event.event_start).toLocaleString()}</td>
-                <td>{event.event_duration}</td>
-                <td>
-                  <button className="btn btn-danger" onClick={() => handleShowModal(event.ven_id, event.event_id)}>
-                    Cancel
-                  </button>
-                </td>
+        <div className="table-container">
+          <table className="table mt-4 table-centered">
+            <thead>
+              <tr>
+                <th>VEN ID</th>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Event Type</th>
+                <th>Start Time</th>
+                <th>Duration (minutes)</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {events.map(event => (
+                <tr key={event.event_id}>
+                  <td>{event.ven_id}</td>
+                  <td>{event.event_id}</td>
+                  <td>{event.event_name}</td>
+                  <td>{event.event_type}</td>
+                  <td>{new Date(event.event_start).toLocaleString()}</td>
+                  <td>{event.event_duration}</td>
+                  <td>
+                    <button className="btn btn-danger" onClick={() => handleShowModal(event.ven_id, event.event_id)}>
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p>No events found.</p>
       )}
@@ -100,9 +102,9 @@ const ViewEvents: React.FC = () => {
           <div className="modal-content">
             <span className="close" onClick={() => setShowModal(false)}>&times;</span>
             <h2>Cancel Event</h2>
-            <p>Are you sure you want to cancel this event? Note - all VENs need to check in with the VTN and receive the event cancellation before it will be removed from the VTN.</p>
-            <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button>
-            <button className="btn btn-danger" onClick={handleCancel}>Cancel Event</button>
+            <p>Are you sure you want to cancel this event? All VENs need to check in with the VTN and receive the event cancellation before it will be removed from the VTN.</p>
+            <button className="btn btn-secondary" onClick={() => setShowModal(false)}>No, Go Back!</button>
+            <button className="btn btn-danger" onClick={handleCancel}>Yes, Cancel ADR Event!</button>
           </div>
         </div>
       )}

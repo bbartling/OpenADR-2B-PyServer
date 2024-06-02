@@ -10,7 +10,7 @@ body, html {
 }
 
 .container {
-  max-width: 800px; /* Increase max-width for better readability */
+  max-width: 1200px; /* Increase max-width for better readability */
   margin: 20px auto;
   background: #1e1e1e; /* Dark container background */
   padding: 20px;
@@ -37,6 +37,7 @@ h3 {
 p {
   font-size: 18px; /* Adjust font size for paragraphs */
   margin-bottom: 20px; /* Add spacing between paragraphs */
+  width: 40%;
 }
 
 form {
@@ -84,6 +85,15 @@ button:hover,
   background: linear-gradient(45deg, #218838, #28a745); /* Adjust hover background */
 }
 
+.btn-danger {
+  background: linear-gradient(45deg, #dc3545, #c82333); /* Red gradient background */
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(45deg, #c82333, #dc3545); /* Adjusted hover background */
+}
+
 .result {
   margin-top: 20px;
   padding: 10px;
@@ -101,9 +111,9 @@ button:hover,
 }
 
 .alert-danger {
-  background-color: #721c24;
-  color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  background-color: #ff5722; /* Orangish background */
+  color: #ffffff; /* White text */
+  border: 1px solid #ff5722; /* Orangish border */
   margin: 15px 0; /* Add consistent margin */
   text-align: left; /* Left align text (default) */
 }
@@ -111,14 +121,13 @@ button:hover,
 .table-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  overflow-x: auto; /* Enable horizontal scrolling */
 }
 
 .table-centered {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: none; /* Remove max-width restriction */
+  min-width: 800px; /* Ensure it can grow beyond the container */
   background: #2a2a2a;
   border-collapse: collapse;
   font-size: 18px; /* Adjust font size for table */
@@ -128,20 +137,18 @@ button:hover,
 .table-centered td {
   padding: 12px 15px;
   border: 1px solid #444;
+  text-align: center; /* Center-align text in table cells */
+  vertical-align: middle; /* Vertically center content in table cells */
 }
 
-.table-centered th {
-  background-color: #333;
-  color: #f0f0f0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Add text shadow */
+.table-centered td .btn {
+  display: inline-block;
+  margin: 0 auto; /* Center button horizontally within table cell */
 }
+
 
 .table-centered tr:nth-child(even) {
   background-color: #1e1e1e;
-}
-
-.table-centered td {
-  text-align: center; /* Center align content in table cells */
 }
 
 .card {
@@ -171,4 +178,31 @@ button:hover,
 
 .button.delete:hover {
   background: linear-gradient(45deg, #e0a800, #ffc107);
+}
+
+/* Centering styles for modal content */
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center items horizontally */
+  justify-content: center; /* Center items vertically */
+  text-align: center; /* Center text within elements */
+  padding: 20px;
+  background-color: #1e1e1e; /* Dark background for modal */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content .close {
+  align-self: flex-end; /* Align close button to the top right */
+  cursor: pointer;
+}
+
+.modal-content h2,
+.modal-content p {
+  margin: 10px 0;
+}
+
+.modal-content button {
+  margin: 10px;
 }
