@@ -61,7 +61,7 @@ const ViewEvents: React.FC = () => {
         )}
       </div>
       {events.length > 0 ? (
-        <table className="table mt-4">
+        <table className="table mt-4 table-centered">
           <thead>
             <tr>
               <th>VEN ID</th>

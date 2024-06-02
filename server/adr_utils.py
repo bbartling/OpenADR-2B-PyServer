@@ -1,11 +1,20 @@
 import asyncio
 from functools import partial
 from datetime import datetime, timezone, timedelta
+import logging
 from aiohttp import web
 from ven_registry import VenRegistry, UnknownVenError, DuplicateVenError
 
-# Define your VEN registry
-VEN_REGISTRY = VenRegistry()
+# Define VEN registry variable to be set later
+VEN_REGISTRY = None
+
+# Set up logging
+logger = logging.getLogger('openleadr')
+logger.setLevel(logging.INFO)
+
+def set_ven_registry(ven_registry):
+    global VEN_REGISTRY
+    VEN_REGISTRY = ven_registry
 
 async def on_create_party_registration(registration_info):
     ven_name = registration_info["ven_name"]
@@ -13,7 +22,7 @@ async def on_create_party_registration(registration_info):
         ven_info = VEN_REGISTRY.get_ven_info_from_name(ven_name)
         return (ven_info.ven_id, ven_info.registration_id)
     except UnknownVenError:
-        print(f"An unknown VEN tried to connect: {ven_name}")
+        logger.warning(f"An unknown VEN tried to connect: {ven_name}")
     return False
 
 async def on_cancel_party_registration(payload):
@@ -21,9 +30,9 @@ async def on_cancel_party_registration(payload):
     try:
         ven_info = VEN_REGISTRY.get_ven_info_from_id(ven_id)
         VEN_REGISTRY.remove_ven(ven_info.ven_name)
-        print(f"VEN {ven_info.ven_name} with ID {ven_id} has been deregistered.")
+        logger.info(f"VEN {ven_info.ven_name} with ID {ven_id} has been deregistered.")
     except UnknownVenError:
-        print(f"Attempted to deregister unknown VEN with ID {ven_id}")
+        logger.warning(f"Attempted to deregister unknown VEN with ID {ven_id}")
     return None
 
 async def on_register_report(
@@ -45,15 +54,15 @@ async def on_register_report(
     return callback, sampling_interval
 
 async def on_update_report(data, ven_id, resource_id, measurement):
-    print("on update report")
-    print(data)
+    logger.info("on update report")
+    logger.info(data)
     for time, value in data:
-        print(
+        logger.info(
             f"Ven {ven_id} reported {measurement} = {value} at time {time} for resource {resource_id}"
         )
 
 async def event_response_callback(ven_id, event_id, opt_type):
-    print(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
+    logger.info(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
 
 async def on_request_event(ven_id):
     """
@@ -67,14 +76,14 @@ async def on_created_event(ven_id, event_id, opt_type):
     """
     Custom handler to process the response from a VEN when they acknowledge the receipt of an event.
     """
-    print(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
+    logger.info(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
 
 async def handle_event_post(request):
     payload = await request.json()
-    print('Received Event Payload:', payload)
+    logger.info('Received Event Payload:', payload)
     ven_name = payload.get("venName")
     if not ven_name:
-        print("Error: Missing venName")
+        logger.error("Error: Missing venName")
         raise web.HTTPBadRequest(text="Missing venName")
     
     signal_name = payload.get("eventName")
@@ -83,7 +92,7 @@ async def handle_event_post(request):
     duration = payload.get("duration")
 
     if not all([signal_name, signal_type, start_time, duration]):
-        print("Error: Missing required event data")
+        logger.error("Error: Missing required event data")
         raise web.HTTPBadRequest(text="Missing required event data")
 
     intervals = [
@@ -95,7 +104,7 @@ async def handle_event_post(request):
     ]
 
     if signal_name not in ["SIMPLE", "ELECTRICITY_PRICE", "LOAD_DISPATCH"]:
-        print(f"Error: Unknown name {signal_name}")
+        logger.error(f"Error: Unknown name {signal_name}")
         raise web.HTTPBadRequest(text=f"Unknown name {signal_name}")
     if signal_type not in [
         "level",
@@ -106,14 +115,14 @@ async def handle_event_post(request):
         "delta",
         "multiplier",
     ]:
-        print(f"Error: Unknown type {signal_type}")
+        logger.error(f"Error: Unknown type {signal_type}")
         raise web.HTTPBadRequest(text=f"Unknown type {signal_type}")
 
     try:
         ven = VEN_REGISTRY.get_ven_info_from_name(ven_name)
-        print(f'VEN found: {ven}')
+        logger.info(f'VEN found: {ven}')
     except UnknownVenError:
-        print(f"Error: VEN {ven_name} not found")
+        logger.error(f"Error: VEN {ven_name} not found")
         raise web.HTTPNotFound(text=f"VEN {ven_name} not found")
 
     # Check for existing events with the same parameters
@@ -127,27 +136,27 @@ async def handle_event_post(request):
         if (existing_signal_name == signal_name and
             existing_signal_type == signal_type and
             existing_intervals == intervals):
-            print(f"Duplicate event detected for VEN {ven.ven_id}. Event not added.")
+            logger.info(f"Duplicate event detected for VEN {ven.ven_id}. Event not added.")
             return web.json_response({"status": "error", "message": "Duplicate event detected. Event not added."}, status=400)
 
     # If no duplicates found, add the event
     event_id = request.app["server"].add_event(
         ven.ven_id, signal_name, signal_type, intervals, callback=event_response_callback
     )
-    print(f"Sent event to {ven_name}: {signal_name} ({signal_type})")
+    logger.info(f"Sent event to {ven_name}: {signal_name} ({signal_type})")
     return web.json_response({"status": "success", "message": f"Event sent to {ven_name}", "event_id": event_id})
 
 async def handle_ven_post(request):
     payload = await request.json()
-    print('Received VEN Payload:', payload)
+    logger.info('Received VEN Payload:', payload)
     ven_name = payload["venName"]
 
     try:
         VEN_REGISTRY.add_ven(ven_name)
-        print(f'VEN {ven_name} added successfully.')
+        logger.info(f'VEN {ven_name} added successfully.')
         return web.json_response({"status": "success", "message": f"VEN {ven_name} added successfully"})
     except DuplicateVenError:
-        print(f'VEN {ven_name} already registered.')
+        logger.warning(f'VEN {ven_name} already registered.')
         return web.json_response({"status": "error", "message": "VEN already registered"}, status=400)
 
 async def handle_list_all_events(request):
@@ -168,7 +177,7 @@ async def handle_list_all_events(request):
                     ven_name = "Unknown VEN"
 
                 # Print the specific details on a single line
-                print(f"EVENTS - {ven_name}, Event Start: {event_start}, Event Duration: {event_duration}, Signal Type: {event_type}")
+                logger.info(f"EVENTS - {ven_name}, Event Start: {event_start}, Event Duration: {event_duration}, Signal Type: {event_type}")
 
                 events_list.append({
                     "ven_id": ven_id,
@@ -181,7 +190,7 @@ async def handle_list_all_events(request):
                 })
         return web.json_response(events_list)
     except Exception as e:
-        print(f"Error listing events: {e}")
+        logger.error(f"Error listing events: {e}")
         raise web.HTTPInternalServerError(text=str(e))
 
 async def handle_cancel_event(request):
@@ -194,7 +203,7 @@ async def handle_cancel_event(request):
 
     # Cancel the event using OpenADRServer's method
     request.app["server"].cancel_event(ven_id, event_id)
-    print(f"Cancelled event {event_id} for VEN {ven_id}")
+    logger.info(f"Cancelled event {event_id} for VEN {ven_id}")
     return web.json_response({"status": "success", "message": f"Event {event_id} cancelled for VEN {ven_id}"})
 
 async def handle_remove_ven(request):
@@ -206,10 +215,10 @@ async def handle_remove_ven(request):
 
     try:
         VEN_REGISTRY.remove_ven(ven_name)
-        print(f"Removed VEN {ven_name} successfully.")
+        logger.info(f"Removed VEN {ven_name} successfully.")
         return web.json_response({"status": "success", "message": f"VEN {ven_name} removed successfully"})
     except UnknownVenError:
-        print(f"VEN {ven_name} not found.")
+        logger.warning(f"VEN {ven_name} not found.")
         return web.json_response({"status": "error", "message": f"VEN {ven_name} not found"}, status=404)
 
 async def handle_list_vens(request):

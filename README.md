@@ -4,6 +4,12 @@ OpenADR-PenTest-Lab is a testbed for learning web app penetration testing in Ope
 ## Web App Interface
 The interface on the demand response server used to configure demand response events is made with React which then communicates to the Python backend. The Python backend runs [openleadr](https://openleadr.org/docs/) project under the hood which is a Python based OpenAdr 2.0 library.
 
+## Front end setup notes
+```bash
+npm install axios react-router-dom react-bootstrap bootstrap
+npm install --save-dev @types/axios @types/react-router-dom typescript
+```
+
 <details>
   <summary>Web App Interface Screenshot</summary>
 

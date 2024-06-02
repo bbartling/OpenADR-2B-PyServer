@@ -1,8 +1,10 @@
 import asyncio
 from aiohttp import web
 import aiohttp_cors
+import logging
 from ven_registry import VenRegistry, UnknownVenError, DuplicateVenError
 from adr_utils import (
+    set_ven_registry,
     on_create_party_registration,
     on_cancel_party_registration,
     on_register_report,
@@ -20,12 +22,17 @@ from openleadr import OpenADRServer, enable_default_logging
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Enable default logging
+enable_default_logging(level=logging.INFO)
+logger = logging.getLogger('openleadr')
+
 # Enable logging and load environment variables
-enable_default_logging()
 load_dotenv()
 
 # Create VEN registry
-VEN_REGISTRY = VenRegistry(Path(__file__).parent / "registered_vens")
+ven_registry_directory = Path(__file__).parent / "registered_vens"
+VEN_REGISTRY = VenRegistry(ven_registry_directory)
+set_ven_registry(VEN_REGISTRY)
 
 # Create the OpenADRServer instance
 server = OpenADRServer(vtn_id="bens_vtn")
