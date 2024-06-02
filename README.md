@@ -15,16 +15,14 @@ Key Features
 * **Easy to Use**: Provides a straightforward setup process and comprehensive documentation to get you started quickly.
 
 ## Web App GUI
-```
 
 <details>
   <summary>Web App Interface Screenshot</summary>
 
-  ![Alt text](/images/app_gui.JPG)
-  ![Alt text](/images/schematic.png)
-  ![Alt text](/images/ven_status.JPG)
+![Alt text](/images/app_gui.JPG)
+![Alt text](/images/schematic.png)
+![Alt text](/images/ven_status.JPG)
 </details>
-```
 
 ## Project goals
 These are some basic goals to make this into an interactive Pen test lab for demand response.
