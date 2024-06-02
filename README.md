@@ -20,7 +20,7 @@ Key Features
   <summary>Web App Interface Screenshot</summary>
 
 ![Alt text](/images/app_gui.JPG)
-![Alt text](/images/schematic.png)
+![Alt text](/images/add_remove_events.JPG)
 ![Alt text](/images/ven_status.JPG)
 </details>
 
