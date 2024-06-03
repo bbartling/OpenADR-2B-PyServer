@@ -23,7 +23,7 @@ const ScheduleEvent: React.FC = () => {
     signalName: 'SIMPLE',
     signalType: 'level',
     startTime: '',
-    duration: '',
+    duration: '120',
   });
   const [vens, setVens] = useState<Ven[]>([]);
   const [selectedVens, setSelectedVens] = useState<string[]>([]);
@@ -100,7 +100,7 @@ const ScheduleEvent: React.FC = () => {
       <h1 className="text-center">Schedule OpenADR Event</h1>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>Select VENs</label>
+          <label className="label-select-vens">Select VENs</label>
           <div className="ven-list">
             <div className="ven-item">
               <input
@@ -126,7 +126,7 @@ const ScheduleEvent: React.FC = () => {
           </div>
         </div>
         <div className="form-group">
-          <label htmlFor="signalName">Event Name</label>
+          <label htmlFor="signalName" className="label-event-details">Event Name</label>
           <select
             id="signalName"
             name="signalName"
@@ -141,7 +141,7 @@ const ScheduleEvent: React.FC = () => {
         </div>
         {formData.signalName === 'SIMPLE' && (
           <div className="form-group">
-            <label htmlFor="signalType">Event Type</label>
+            <label htmlFor="signalType" className="label-event-details">Event Type</label>
             <select
               id="signalType"
               name="signalType"
@@ -151,12 +151,12 @@ const ScheduleEvent: React.FC = () => {
             >
               <option value="level">Level</option>
             </select>
-            <label htmlFor="level">Level</label>
+            <label htmlFor="level" className="label-event-details">Level</label>
             <select
               id="level"
               name="level"
               className="form-control"
-              value={formData.level || ''}
+              value={formData.level !== undefined ? formData.level : ''}
               onChange={(e) => setFormData({ ...formData, level: Number(e.target.value) })}
               required
             >
@@ -170,7 +170,7 @@ const ScheduleEvent: React.FC = () => {
         )}
         {formData.signalName === 'ELECTRICITY_PRICE' && (
           <div className="form-group">
-            <label htmlFor="signalType">Event Type</label>
+            <label htmlFor="signalType" className="label-event-details">Event Type</label>
             <select
               id="signalType"
               name="signalType"
@@ -180,7 +180,7 @@ const ScheduleEvent: React.FC = () => {
             >
               <option value="price">Price</option>
             </select>
-            <label htmlFor="price">Price ($/kWh)</label>
+            <label htmlFor="price" className="label-event-details">Price ($/kWh)</label>
             <input
               type="number"
               id="price"
@@ -195,7 +195,7 @@ const ScheduleEvent: React.FC = () => {
         )}
         {formData.signalName === 'LOAD_DISPATCH' && (
           <div className="form-group">
-            <label htmlFor="signalType">Event Type</label>
+            <label htmlFor="signalType" className="label-event-details">Event Type</label>
             <select
               id="signalType"
               name="signalType"
@@ -205,7 +205,7 @@ const ScheduleEvent: React.FC = () => {
             >
               <option value="level">Level</option>
             </select>
-            <label htmlFor="setpoint">kW Setpoint</label>
+            <label htmlFor="setpoint" className="label-event-details">kW Setpoint</label>
             <input
               type="number"
               id="setpoint"
@@ -219,7 +219,7 @@ const ScheduleEvent: React.FC = () => {
           </div>
         )}
         <div className="form-group">
-          <label htmlFor="startTime">Start Time (UTC)</label>
+          <label htmlFor="startTime" className="label-event-details">Start Time (UTC)</label>
           <input
             type="datetime-local"
             id="startTime"
@@ -231,7 +231,7 @@ const ScheduleEvent: React.FC = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="duration">Duration (minutes)</label>
+          <label htmlFor="duration" className="label-event-details">Duration (minutes)</label>
           <input
             type="number"
             id="duration"

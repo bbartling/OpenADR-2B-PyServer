@@ -22,6 +22,7 @@ Per OpenADR spec `SIMPLE` signal can either be a `0,1,2 or 3`, `ELECTRICITY_PRIC
   <summary>Web App Interface Screenshot</summary>
 
 ![Alt text](/images/app_gui.JPG)
+![Alt text](/images/app_gui2.JPG)
 ![Alt text](/images/add_remove_events.JPG)
 ![Alt text](/images/ven_status.JPG)
 </details>
@@ -33,7 +34,7 @@ These are some basic goals to make this into an interactive Pen test lab for dem
  - [x] test VTN and React interface with a `localhost` OpenADR client
  - [x] make a communications diagram for project
  - [ ] add to GUI features for VEN client off/online status and last meter reading value
- - [ ] add to GUI feature create a single event for multiple VENs
+ - [x] add to GUI feature create a single event for multiple VENs
  - [ ] make a login page for the VTN server
  - [ ] add Docker container support
  - [ ] deploy on the internet and test remote OpenAdr client
