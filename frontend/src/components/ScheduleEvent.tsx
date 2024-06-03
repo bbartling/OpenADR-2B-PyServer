@@ -12,6 +12,11 @@ interface EventFormData {
   setpoint?: number;
 }
 
+interface Ven {
+  ven_id: string;
+  ven_name: string;
+}
+
 const ScheduleEvent: React.FC = () => {
   const [formData, setFormData] = useState<EventFormData>({
     venName: '',
@@ -20,23 +25,24 @@ const ScheduleEvent: React.FC = () => {
     startTime: '',
     duration: '',
   });
+  const [vens, setVens] = useState<Ven[]>([]);
+  const [selectedVens, setSelectedVens] = useState<string[]>([]);
   const [result, setResult] = useState<{ status: string, message: string } | null>(null);
 
-  // Dummy function to simulate fetching events
-  const fetchAllEvents = async () => {
+  // Fetch VENs
+  const fetchAllVens = async () => {
     try {
-      // Replace the URL with your actual endpoint
-      const response = await axios.get('http://127.0.0.1:8080/api/events');
-      console.log('Events fetched:', response.data);
+      console.log('Fetching all VENs...');
+      const response = await axios.get('http://127.0.0.1:8080/api/list_vens');
+      console.log('VENs fetched:', response.data);
+      setVens(response.data);
     } catch (error) {
-      console.error('Error fetching events:', error);
+      console.error('Error fetching VENs:', error);
     }
   };
 
   useEffect(() => {
-    fetchAllEvents();
-    const interval = setInterval(fetchAllEvents, 5000);
-    return () => clearInterval(interval);
+    fetchAllVens();
   }, []);
 
   useEffect(() => {
@@ -47,17 +53,44 @@ const ScheduleEvent: React.FC = () => {
   }, [result]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    console.log(`Form data change: ${e.target.name} = ${e.target.value}`);
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleVenSelection = (ven_id: string) => {
+    setSelectedVens(prev => 
+      prev.includes(ven_id) ? prev.filter(id => id !== ven_id) : [...prev, ven_id]
+    );
+    console.log('Selected VENs:', selectedVens);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedVens.length === vens.length) {
+      setSelectedVens([]);
+    } else {
+      setSelectedVens(vens.map(ven => ven.ven_id));
+    }
+    console.log('Selected All VENs:', selectedVens);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    console.log('Submitting event with data:', formData);
+    console.log('Selected VENs for the event:', selectedVens);
+
     try {
-      const response = await axios.post('http://127.0.0.1:8080/api/event', formData);
-      setResult({ status: 'success', message: `Event scheduled successfully for VEN ${formData.venName}.` });
-      console.log('Response:', response.data);
+      for (const ven_id of selectedVens) {
+        const payload = {
+          ...formData,
+          ven_ids: selectedVens
+        };
+        console.log('Payload:', payload);
+        const response = await axios.post('http://127.0.0.1:8080/api/event', payload);
+        console.log('Response for VEN ID:', ven_id, response.data);
+      }
+      setResult({ status: 'success', message: `Event scheduled successfully for selected VENs.` });
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error scheduling event:', error);
       setResult({ status: 'error', message: 'An error occurred while scheduling the event.' });
     }
   };
@@ -67,16 +100,30 @@ const ScheduleEvent: React.FC = () => {
       <h1 className="text-center">Schedule OpenADR Event</h1>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="venName">VEN Name</label>
-          <input
-            type="text"
-            id="venName"
-            name="venName"
-            className="form-control"
-            value={formData.venName}
-            onChange={handleChange}
-            required
-          />
+          <label>Select VENs</label>
+          <div className="ven-list">
+            <div className="ven-item">
+              <input
+                type="checkbox"
+                id="selectAll"
+                onChange={handleSelectAll}
+                checked={selectedVens.length === vens.length}
+              />
+              <label htmlFor="selectAll">Select All</label>
+            </div>
+            {vens.map(ven => (
+              <div key={ven.ven_id} className="ven-item">
+                <label htmlFor={ven.ven_id}>{ven.ven_name}</label>
+                <input
+                  type="checkbox"
+                  id={ven.ven_id}
+                  value={ven.ven_id}
+                  onChange={() => handleVenSelection(ven.ven_id)}
+                  checked={selectedVens.includes(ven.ven_id)}
+                />
+              </div>
+            ))}
+          </div>
         </div>
         <div className="form-group">
           <label htmlFor="signalName">Event Name</label>

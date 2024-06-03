@@ -206,3 +206,18 @@ button:hover,
 .modal-content button {
   margin: 10px;
 }
+
+.ven-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ven-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ven-item input[type="checkbox"] {
+  margin-left: 8px;
+}

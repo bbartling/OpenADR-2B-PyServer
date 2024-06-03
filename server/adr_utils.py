@@ -82,17 +82,13 @@ async def on_created_event(ven_id, event_id, opt_type):
 async def handle_event_post(request):
     payload = await request.json()
     logger.info('Received Event Payload:', payload)
-    ven_name = payload.get("venName")
-    if not ven_name:
-        logger.error("Error: Missing venName")
-        raise web.HTTPBadRequest(text="Missing venName")
-    
+    ven_ids = payload.get("ven_ids", [])
     signal_name = payload.get("signalName")
     signal_type = payload.get("signalType")
     start_time = payload.get("startTime")
     duration = payload.get("duration")
 
-    if not all([signal_name, signal_type, start_time, duration]):
+    if not all([ven_ids, signal_name, signal_type, start_time, duration]):
         logger.error("Error: Missing required event data")
         raise web.HTTPBadRequest(text="Missing required event data")
 
@@ -130,33 +126,43 @@ async def handle_event_post(request):
         logger.error(f"Error: Unknown type {signal_type}")
         raise web.HTTPBadRequest(text=f"Unknown type {signal_type}")
 
-    try:
-        ven = VEN_REGISTRY.get_ven_info_from_name(ven_name)
-        logger.info(f'VEN found: {ven}')
-    except UnknownVenError:
-        logger.error(f"Error: VEN {ven_name} not found")
-        raise web.HTTPNotFound(text=f"VEN {ven_name} not found")
+    responses = []
+    for ven_id in ven_ids:
+        try:
+            ven = VEN_REGISTRY.get_ven_info_from_id(ven_id)
+            logger.info(f'VEN found: {ven}')
+        except UnknownVenError:
+            logger.error(f"Error: VEN {ven_id} not found")
+            responses.append({"status": "error", "message": f"VEN {ven_id} not found"})
+            continue
 
-    # Check for existing events with the same parameters
-    existing_events = request.app["server"].events.get(ven.ven_id, [])
-    for event in existing_events:
-        existing_signal_name = event.event_signals[0].signal_name
-        existing_signal_type = event.event_signals[0].signal_type
-        existing_intervals = event.event_signals[0].intervals
+        # Check for existing events with the same parameters
+        existing_events = request.app["server"].events.get(ven_id, [])
+        is_duplicate = False
+        for event in existing_events:
+            existing_signal_name = event.event_signals[0].signal_name
+            existing_signal_type = event.event_signals[0].signal_type
+            existing_intervals = event.event_signals[0].intervals
 
-        # Compare event details
-        if (existing_signal_name == signal_name and
-            existing_signal_type == signal_type and
-            existing_intervals == intervals):
-            logger.info(f"Duplicate event detected for VEN {ven.ven_id}. Event not added.")
-            return web.json_response({"status": "error", "message": "Duplicate event detected. Event not added."}, status=400)
+            if (existing_signal_name == signal_name and
+                existing_signal_type == signal_type and
+                existing_intervals == intervals):
+                logger.info(f"Duplicate event detected for VEN {ven_id}. Event not added.")
+                responses.append({"status": "error", "message": f"Duplicate event detected for VEN {ven_id}"})
+                is_duplicate = True
+                break
+        
+        if is_duplicate:
+            continue
 
-    # If no duplicates found, add the event
-    event_id = request.app["server"].add_event(
-        ven.ven_id, signal_name, signal_type, intervals, callback=event_response_callback
-    )
-    logger.info(f"Sent event to {ven_name}: {signal_name} ({signal_type})")
-    return web.json_response({"status": "success", "message": f"Event sent to {ven_name}", "event_id": event_id})
+        # If no duplicates found, add the event
+        event_id = request.app["server"].add_event(
+            ven_id, signal_name, signal_type, intervals, callback=event_response_callback
+        )
+        logger.info(f"Sent event to {ven.ven_name}: {signal_name} ({signal_type})")
+        responses.append({"status": "success", "message": f"Event sent to {ven.ven_name}", "event_id": event_id})
+
+    return web.json_response(responses)
 
 
 async def handle_ven_post(request):
