@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 interface Ven {
@@ -13,11 +13,24 @@ interface ListVensProps {
 const ListVens: React.FC<ListVensProps> = ({ vens, fetchAllVens }) => {
   const [result, setResult] = useState<{ status: string, message: string } | null>(null);
 
+  useEffect(() => {
+    fetchAllVens();
+    const interval = setInterval(fetchAllVens, 5000);
+    return () => clearInterval(interval);
+  }, [fetchAllVens]);
+
+  useEffect(() => {
+    if (result) {
+      const timer = setTimeout(() => setResult(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
+
   const handleRemove = async (venName: string) => {
     try {
       const response = await axios.post('http://127.0.0.1:8080/api/remove_ven', { venName });
       setResult({ status: response.data.status, message: response.data.message });
-      fetchAllVens();
+      fetchAllVens();  // Refresh the list after removing a VEN
     } catch (error) {
       console.error('Error removing VEN:', error);
       setResult({ status: 'error', message: 'Failed to remove VEN. Please try again.' });

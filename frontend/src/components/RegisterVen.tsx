@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 interface RegisterVenProps {
@@ -20,6 +20,14 @@ const RegisterVen: React.FC<RegisterVenProps> = ({ fetchAllVens }) => {
       setResult({ status: 'error', message: 'Failed to register VEN. Please try again.' });
     }
   };
+
+  // Automatically dismiss alert messages after 5 seconds
+  useEffect(() => {
+    if (result) {
+      const timer = setTimeout(() => setResult(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
 
   return (
     <div className="container mt-4">

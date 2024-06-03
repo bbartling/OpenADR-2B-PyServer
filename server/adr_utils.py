@@ -86,8 +86,8 @@ async def handle_event_post(request):
         logger.error("Error: Missing venName")
         raise web.HTTPBadRequest(text="Missing venName")
     
-    signal_name = payload.get("eventName")
-    signal_type = payload.get("eventType")
+    signal_name = payload.get("signalName")
+    signal_type = payload.get("signalType")
     start_time = payload.get("startTime")
     duration = payload.get("duration")
 
@@ -165,8 +165,8 @@ async def handle_list_all_events(request):
         for ven_id, events in request.app["server"].events.items():
             for event in events:
                 event_id = event.event_descriptor.event_id
-                event_name = event.event_signals[0].signal_name
-                event_type = event.event_signals[0].signal_type
+                signal_name = event.event_signals[0].signal_name
+                signal_type = event.event_signals[0].signal_type
                 event_start = event.active_period['dtstart']
                 event_duration = event.active_period['duration']
 
@@ -177,14 +177,14 @@ async def handle_list_all_events(request):
                     ven_name = "Unknown VEN"
 
                 # Print the specific details on a single line
-                logger.info(f"EVENTS - {ven_name}, Event Start: {event_start}, Event Duration: {event_duration}, Signal Type: {event_type}")
+                logger.info(f"EVENTS - {ven_name}, Event Start: {event_start}, Event Duration: {event_duration}, Signal Type: {signal_type}")
 
                 events_list.append({
                     "ven_id": ven_id,
                     "ven_name": ven_name,
                     "event_id": event_id,
-                    "event_name": event_name,
-                    "event_type": event_type,
+                    "signal_name": signal_name,
+                    "signal_type": signal_type,
                     "event_start": event_start.isoformat(),
                     "event_duration": event_duration.total_seconds() / 60
                 })

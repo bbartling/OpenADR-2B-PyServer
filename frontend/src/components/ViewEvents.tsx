@@ -3,9 +3,10 @@ import axios from 'axios';
 
 interface Event {
   ven_id: string;
+  ven_name: string;
   event_id: string;
-  event_name: string;
-  event_type: string;
+  signal_name: string;
+  signal_type: string;
   event_start: string;
   event_duration: number;
 }
@@ -26,6 +27,19 @@ const ViewEvents: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAllEvents();
+    const interval = setInterval(fetchAllEvents, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (result) {
+      const timer = setTimeout(() => setResult(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
+
   const handleCancel = async () => {
     if (!currentEvent) return;
     try {
@@ -44,12 +58,6 @@ const ViewEvents: React.FC = () => {
     setShowModal(true);
   };
 
-  useEffect(() => {
-    fetchAllEvents();
-    const interval = setInterval(fetchAllEvents, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="container mt-4">
       <h1 className="text-center">View and Cancel Events</h1>
@@ -61,50 +69,47 @@ const ViewEvents: React.FC = () => {
         )}
       </div>
       {events.length > 0 ? (
-        <div className="table-container">
-          <table className="table mt-4 table-centered">
-            <thead>
-              <tr>
-                <th>VEN ID</th>
-                <th>Event ID</th>
-                <th>Event Name</th>
-                <th>Event Type</th>
-                <th>Start Time</th>
-                <th>Duration (minutes)</th>
-                <th>Actions</th>
+        <table className="table mt-4 table-centered">
+          <thead>
+            <tr>
+              <th>VEN Name</th>
+              <th>Event ID</th>
+              <th>Signal Name</th>
+              <th>Signal Type</th>
+              <th>Start Time</th>
+              <th>Duration (minutes)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {events.map(event => (
+              <tr key={event.event_id}>
+                <td>{event.ven_name}</td>
+                <td>{event.event_id}</td>
+                <td>{event.signal_name}</td>
+                <td>{event.signal_type}</td>
+                <td>{new Date(event.event_start).toLocaleString()}</td>
+                <td>{event.event_duration}</td>
+                <td>
+                  <button className="btn btn-danger" onClick={() => handleShowModal(event.ven_id, event.event_id)}>
+                    Cancel
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {events.map(event => (
-                <tr key={event.event_id}>
-                  <td>{event.ven_id}</td>
-                  <td>{event.event_id}</td>
-                  <td>{event.event_name}</td>
-                  <td>{event.event_type}</td>
-                  <td>{new Date(event.event_start).toLocaleString()}</td>
-                  <td>{event.event_duration}</td>
-                  <td>
-                    <button className="btn btn-danger" onClick={() => handleShowModal(event.ven_id, event.event_id)}>
-                      Cancel
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       ) : (
         <p>No events found.</p>
       )}
-
       {showModal && (
         <div className="modal">
           <div className="modal-content">
             <span className="close" onClick={() => setShowModal(false)}>&times;</span>
             <h2>Cancel Event</h2>
-            <p>Are you sure you want to cancel this event? All VENs need to check in with the VTN and receive the event cancellation before it will be removed from the VTN.</p>
+            <p>Are you sure you want to cancel this event?</p>
             <button className="btn btn-secondary" onClick={() => setShowModal(false)}>No, Go Back!</button>
-            <button className="btn btn-danger" onClick={handleCancel}>Yes, Cancel ADR Event!</button>
+            <button className="btn btn-danger" onClick={handleCancel}>Yes, Cancel Event!</button>
           </div>
         </div>
       )}

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 interface EventFormData {
   venName: string;
-  eventName: string;
-  eventType: string;
+  signalName: string;
+  signalType: string;
   startTime: string;
   duration: string;
 }
@@ -12,12 +12,36 @@ interface EventFormData {
 const ScheduleEvent: React.FC = () => {
   const [formData, setFormData] = useState<EventFormData>({
     venName: '',
-    eventName: 'SIMPLE',
-    eventType: 'level',
+    signalName: 'SIMPLE',
+    signalType: 'level',
     startTime: '',
     duration: '',
   });
   const [result, setResult] = useState<{ status: string, message: string } | null>(null);
+
+  // Dummy function to simulate fetching events
+  const fetchAllEvents = async () => {
+    try {
+      // Replace the URL with your actual endpoint
+      const response = await axios.get('http://127.0.0.1:8080/api/events');
+      console.log('Events fetched:', response.data);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllEvents();
+    const interval = setInterval(fetchAllEvents, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (result) {
+      const timer = setTimeout(() => setResult(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,6 +52,7 @@ const ScheduleEvent: React.FC = () => {
     try {
       const response = await axios.post('http://127.0.0.1:8080/api/event', formData);
       setResult({ status: 'success', message: `Event scheduled successfully for VEN ${formData.venName}.` });
+      console.log('Response:', response.data);
     } catch (error) {
       console.error('Error:', error);
       setResult({ status: 'error', message: 'An error occurred while scheduling the event.' });
@@ -51,12 +76,12 @@ const ScheduleEvent: React.FC = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="eventName">Event Name</label>
+          <label htmlFor="signalName">Event Name</label>
           <select
-            id="eventName"
-            name="eventName"
+            id="signalName"
+            name="signalName"
             className="form-control"
-            value={formData.eventName}
+            value={formData.signalName}
             onChange={handleChange}
           >
             <option value="SIMPLE">Simple</option>
@@ -65,12 +90,12 @@ const ScheduleEvent: React.FC = () => {
           </select>
         </div>
         <div className="form-group">
-          <label htmlFor="eventType">Event Type</label>
+          <label htmlFor="signalType">Event Type</label>
           <select
-            id="eventType"
-            name="eventType"
+            id="signalType"
+            name="signalType"
             className="form-control"
-            value={formData.eventType}
+            value={formData.signalType}
             onChange={handleChange}
           >
             <option value="level">Level</option>
