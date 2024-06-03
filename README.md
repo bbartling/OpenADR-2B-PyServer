@@ -15,6 +15,8 @@ Key Features
 * **Easy to Use**: Provides a straightforward setup process and comprehensive documentation to get you started quickly.
 
 ## Web App GUI
+At the moment the web app supports OpenADR 2.0b `SIMPLE`, `ELECTRICITY_PRICE`, and `LOAD_DISPATCH` from web app GUI with drop down menu items. 
+Per OpenADR spec `SIMPLE` signal can either be a `0,1,2 or 3`, `ELECTRICITY_PRICE` is a selectable kWh/Hr, and `LOAD_DISPATCH` at the moment is a selectable kW power setpoint for the building to maintain. All signals have a `duration` in minutes `start time` menu selection in UTC time zone to configure the ADR event. Also as demonstrated below are pop up alerts the web app supports for misconfigurations of VEN or ADR events.
 
 <details>
   <summary>Web App Interface Screenshot</summary>
@@ -30,9 +32,9 @@ These are some basic goals to make this into an interactive Pen test lab for dem
  - [x] create basic React based interface for the GUI
  - [x] test VTN and React interface with a `localhost` OpenADR client
  - [x] make a communications diagram for project
- - [ ] make a login page for the VTN server
  - [ ] add to GUI features for VEN client off/online status and last meter reading value
- - [ ] revise GUI to show VEN name instead of VEN ID
+ - [ ] add to GUI feature create a single event for multiple VENs
+ - [ ] make a login page for the VTN server
  - [ ] add Docker container support
  - [ ] deploy on the internet and test remote OpenAdr client
  - [ ] deploy on open sourced bug bounty program for research purposes on making ADR servers most secure as possible

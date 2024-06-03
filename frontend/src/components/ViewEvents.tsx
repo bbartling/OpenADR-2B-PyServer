@@ -108,6 +108,7 @@ const ViewEvents: React.FC = () => {
             <span className="close" onClick={() => setShowModal(false)}>&times;</span>
             <h2>Cancel Event</h2>
             <p>Are you sure you want to cancel this event?</p>
+            <p>Note that all VENs need to check in with the server and receive the updated event notification before the event will be removed from the server.</p>
             <button className="btn btn-secondary" onClick={() => setShowModal(false)}>No, Go Back!</button>
             <button className="btn btn-danger" onClick={handleCancel}>Yes, Cancel Event!</button>
           </div>

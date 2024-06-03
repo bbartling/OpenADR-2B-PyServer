@@ -78,6 +78,7 @@ async def on_created_event(ven_id, event_id, opt_type):
     """
     logger.info(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
 
+
 async def handle_event_post(request):
     payload = await request.json()
     logger.info('Received Event Payload:', payload)
@@ -95,17 +96,28 @@ async def handle_event_post(request):
         logger.error("Error: Missing required event data")
         raise web.HTTPBadRequest(text="Missing required event data")
 
+    signal_payload = None
+    if signal_name == "SIMPLE":
+        signal_payload = payload.get("level", 1)
+    elif signal_name == "ELECTRICITY_PRICE":
+        signal_payload = payload.get("price")
+        if signal_payload is None:
+            raise web.HTTPBadRequest(text="Missing price for ELECTRICITY_PRICE event")
+    elif signal_name == "LOAD_DISPATCH":
+        signal_payload = payload.get("setpoint")
+        if signal_payload is None:
+            raise web.HTTPBadRequest(text="Missing setpoint for LOAD_DISPATCH event")
+    else:
+        raise web.HTTPBadRequest(text=f"Unknown signal name {signal_name}")
+
     intervals = [
         {
             "dtstart": datetime.strptime(start_time, "%Y-%m-%dT%H:%M").replace(tzinfo=timezone.utc),
             "duration": timedelta(minutes=int(duration)),
-            "signal_payload": 1,
+            "signal_payload": signal_payload,
         }
     ]
 
-    if signal_name not in ["SIMPLE", "ELECTRICITY_PRICE", "LOAD_DISPATCH"]:
-        logger.error(f"Error: Unknown name {signal_name}")
-        raise web.HTTPBadRequest(text=f"Unknown name {signal_name}")
     if signal_type not in [
         "level",
         "price",
@@ -145,6 +157,7 @@ async def handle_event_post(request):
     )
     logger.info(f"Sent event to {ven_name}: {signal_name} ({signal_type})")
     return web.json_response({"status": "success", "message": f"Event sent to {ven_name}", "event_id": event_id})
+
 
 async def handle_ven_post(request):
     payload = await request.json()
@@ -201,10 +214,29 @@ async def handle_cancel_event(request):
     if not ven_id or not event_id:
         raise web.HTTPBadRequest(text="Missing ven_id or event_id")
 
+    # Retrieve ven_name
+    try:
+        ven_info = VEN_REGISTRY.get_ven_info_from_id(ven_id)
+        ven_name = ven_info.ven_name
+    except UnknownVenError:
+        raise web.HTTPNotFound(text=f"VEN with id {ven_id} not found")
+
+    # Retrieve event_name
+    event_name = None
+    existing_events = request.app["server"].events.get(ven_id, [])
+    for event in existing_events:
+        if event.event_descriptor.event_id == event_id:
+            event_name = event.event_signals[0].signal_name
+            break
+
+    if not event_name:
+        raise web.HTTPNotFound(text=f"Event with id {event_id} not found for VEN {ven_id}")
+
     # Cancel the event using OpenADRServer's method
     request.app["server"].cancel_event(ven_id, event_id)
     logger.info(f"Cancelled event {event_id} for VEN {ven_id}")
-    return web.json_response({"status": "success", "message": f"Event {event_id} cancelled for VEN {ven_id}"})
+    return web.json_response({"status": "success", "message": f"Event '{event_name}' cancelled for VEN '{ven_name}'"})
+
 
 async def handle_remove_ven(request):
     payload = await request.json()

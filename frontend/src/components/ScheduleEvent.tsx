@@ -7,6 +7,9 @@ interface EventFormData {
   signalType: string;
   startTime: string;
   duration: string;
+  level?: number;
+  price?: number;
+  setpoint?: number;
 }
 
 const ScheduleEvent: React.FC = () => {
@@ -89,24 +92,85 @@ const ScheduleEvent: React.FC = () => {
             <option value="LOAD_DISPATCH">Load Dispatch</option>
           </select>
         </div>
-        <div className="form-group">
-          <label htmlFor="signalType">Event Type</label>
-          <select
-            id="signalType"
-            name="signalType"
-            className="form-control"
-            value={formData.signalType}
-            onChange={handleChange}
-          >
-            <option value="level">Level</option>
-            <option value="price">Price</option>
-            <option value="priceRelative">Relative Price</option>
-            <option value="priceMultiplier">Price Multiplier</option>
-            <option value="setpoint">Setpoint</option>
-            <option value="delta">Delta</option>
-            <option value="multiplier">Multiplier</option>
-          </select>
-        </div>
+        {formData.signalName === 'SIMPLE' && (
+          <div className="form-group">
+            <label htmlFor="signalType">Event Type</label>
+            <select
+              id="signalType"
+              name="signalType"
+              className="form-control"
+              value={formData.signalType}
+              onChange={handleChange}
+            >
+              <option value="level">Level</option>
+            </select>
+            <label htmlFor="level">Level</label>
+            <select
+              id="level"
+              name="level"
+              className="form-control"
+              value={formData.level || ''}
+              onChange={(e) => setFormData({ ...formData, level: Number(e.target.value) })}
+              required
+            >
+              <option value="">Select Level</option>
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+        )}
+        {formData.signalName === 'ELECTRICITY_PRICE' && (
+          <div className="form-group">
+            <label htmlFor="signalType">Event Type</label>
+            <select
+              id="signalType"
+              name="signalType"
+              className="form-control"
+              value={formData.signalType}
+              onChange={handleChange}
+            >
+              <option value="price">Price</option>
+            </select>
+            <label htmlFor="price">Price ($/kWh)</label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              className="form-control"
+              value={formData.price || ''}
+              onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+              step="0.01"
+              required
+            />
+          </div>
+        )}
+        {formData.signalName === 'LOAD_DISPATCH' && (
+          <div className="form-group">
+            <label htmlFor="signalType">Event Type</label>
+            <select
+              id="signalType"
+              name="signalType"
+              className="form-control"
+              value={formData.signalType}
+              onChange={handleChange}
+            >
+              <option value="level">Level</option>
+            </select>
+            <label htmlFor="setpoint">kW Setpoint</label>
+            <input
+              type="number"
+              id="setpoint"
+              name="setpoint"
+              className="form-control"
+              value={formData.setpoint || ''}
+              onChange={(e) => setFormData({ ...formData, setpoint: Number(e.target.value) })}
+              step="0.1"
+              required
+            />
+          </div>
+        )}
         <div className="form-group">
           <label htmlFor="startTime">Start Time (UTC)</label>
           <input
