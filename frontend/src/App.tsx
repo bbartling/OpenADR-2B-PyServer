@@ -8,9 +8,15 @@ import ViewEvents from './components/ViewEvents';
 import ListVens from './components/ListVens';
 import './App.css';
 
+
 interface Ven {
   ven_name: string;
+  last_report: string | null;
+  last_report_units: string | null;
+  last_report_time: string | null;
+  connection_quality: number;  // Add this line
 }
+
 
 const App: React.FC = () => {
   const [vens, setVens] = useState<Ven[]>([]);

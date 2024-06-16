@@ -53,6 +53,7 @@ async def on_register_report(
     sampling_interval = min_sampling_interval
     return callback, sampling_interval
 
+
 async def on_update_report(data, ven_id, resource_id, measurement):
     logger.info("on update report")
     logger.info(data)
@@ -60,6 +61,9 @@ async def on_update_report(data, ven_id, resource_id, measurement):
         logger.info(
             f"Ven {ven_id} reported {measurement} = {value} at time {time} for resource {resource_id}"
         )
+        # Update the registry with the last report value, units, and time
+        ven_info = VEN_REGISTRY.get_ven_info_from_id(ven_id)
+        VEN_REGISTRY.update_ven_report(ven_info.ven_name, value, measurement, time.isoformat())
 
 async def event_response_callback(ven_id, event_id, opt_type):
     logger.info(f"VEN {ven_id} responded to Event {event_id} with: {opt_type}")
@@ -259,6 +263,18 @@ async def handle_remove_ven(request):
         logger.warning(f"VEN {ven_name} not found.")
         return web.json_response({"status": "error", "message": f"VEN {ven_name} not found"}, status=404)
 
+
 async def handle_list_vens(request):
-    ven_list = VEN_REGISTRY.get_all_vens()
-    return web.json_response([{"ven_name": ven.ven_name, "ven_id": ven.ven_id, "registration_id": ven.registration_id} for ven in ven_list])
+    ven_list = VEN_REGISTRY.get_all_vens_with_quality()
+    return web.json_response([
+        {
+            "ven_name": ven["ven_name"],
+            "ven_id": ven["ven_id"],
+            "registration_id": ven["registration_id"],
+            "last_report": ven["last_report"],
+            "last_report_units": ven["last_report_units"],
+            "last_report_time": ven["last_report_time"],
+            "connection_quality": ven["connection_quality"]
+        }
+        for ven in ven_list
+    ])

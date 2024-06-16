@@ -2,12 +2,13 @@ import sys
 import asyncio
 from datetime import timedelta
 from openleadr import OpenADRClient, enable_default_logging
+import random
 
 enable_default_logging()
 
 async def collect_report_value():
     # This callback is called when you need to collect a value for your Report
-    return 1.23
+    return round(random.uniform(80.5, 350.9))
 
 async def handle_event(event):
     # This callback receives an Event dict.

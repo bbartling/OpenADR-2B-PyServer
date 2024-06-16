@@ -1,8 +1,14 @@
+// ListVens.tsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 interface Ven {
   ven_name: string;
+  last_report: string | null;
+  last_report_units: string | null;
+  last_report_time: string | null;
+  connection_quality: number;
 }
 
 interface ListVensProps {
@@ -53,6 +59,10 @@ const ListVens: React.FC<ListVensProps> = ({ vens, fetchAllVens }) => {
             <thead>
               <tr>
                 <th>VEN Name</th>
+                <th>Last Report Value</th>
+                <th>Units</th>
+                <th>Timestamp</th>
+                <th>Connection Quality</th>  {/* Add this line */}
                 <th>Actions</th>
               </tr>
             </thead>
@@ -60,6 +70,10 @@ const ListVens: React.FC<ListVensProps> = ({ vens, fetchAllVens }) => {
               {vens.map(ven => (
                 <tr key={ven.ven_name}>
                   <td>{ven.ven_name}</td>
+                  <td>{ven.last_report ? ven.last_report : 'No reports yet'}</td>
+                  <td>{ven.last_report_units ? ven.last_report_units : 'N/A'}</td>
+                  <td>{ven.last_report_time ? new Date(ven.last_report_time).toLocaleString() : 'N/A'}</td>
+                  <td>{ven.connection_quality.toFixed(2)}%</td>  {/* Add this line */}
                   <td>
                     <button className="btn btn-danger" onClick={() => handleRemove(ven.ven_name)}>
                       Remove

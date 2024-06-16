@@ -1,5 +1,5 @@
 # OpenADR-2B-PyServer
-OpenADR-2B-PyServer is a free, open-source, and secure implementation of an OpenADR 2.0B server written in Python. Utilizing the OpenLEADR library, this project aims to provide a robust and reliable platform for Automated Demand Response (ADR) solutions.
+OpenADR-2B-PyServer is a free, open-source, and secure implementation of an OpenADR 2.0B server written in Python. Utilizing the OpenLEADR library, this project aims to provide a robust and reliable platform for Automated Demand Response (ADR) solutions. (PROJECT UNDER ACTIVE DEVELOPMENT)
 
 ## Security
 Security is a top priority for OpenADR-2B-PyServer. The server uses HTTPS for encrypted communication and JWT for the web app GUI. VENs follow the OpenADR protocol and authenticate by device name per OPENLEADR.
@@ -27,13 +27,19 @@ Per OpenADR spec `SIMPLE` signal can either be a `0,1,2 or 3`, `ELECTRICITY_PRIC
 ![Alt text](/images/ven_status.JPG)
 </details>
 
+## Ven Status
+The VEN status shows all configured VENs on the VTN server and will display the last report value, engineering units, and time stamp of last check-in to the VTN server. The connection quality metric measures how consistently a VEN (Virtual End Node) checks in with the VTN (Virtual Top Node) and is calculated as a percentage reflecting the reliability of the VEN’s communication. This metric is based on the intervals between successive reports sent by the VEN. Each check-in timestamp is recorded in a deque that stores the last N check-in times. The intervals between these check-ins are calculated, and if they are within an expected threshold (e.g., 10 seconds, with a maximum acceptable interval of 20 seconds), they are considered valid. The connection quality is then computed as the ratio of valid intervals to the total number of intervals, expressed as a percentage.
+```bash
+Connection Quality = ( Number of Valid Intervals / Total Number of Intervals ) × 100
+```
+
 ## Project goals
 These are some basic goals to make this into an interactive Pen test lab for demand response.
  - [x] create basic Python Virtual Top Node (VTN) app
  - [x] create basic React based interface for the GUI
- - [x] test VTN and React interface with a `localhost` OpenADR client
+ - [x] test VTN and React interface with a `localhost` OpenADR multipe client VEN sim
  - [x] make a communications diagram for project
- - [ ] add to GUI features for VEN client off/online status and last meter reading value
+ - [x] add to GUI features for VEN client off/online status and last meter reading value
  - [x] add to GUI feature create a single event for multiple VENs
  - [ ] make a login page for the VTN server
  - [ ] add Docker container support
