@@ -16,6 +16,9 @@ interface ListVensProps {
   fetchAllVens: () => void;
 }
 
+const ENV_MODE = "DEV" // get from Vite or wherever
+const urlBase = ENV_MODE === "DEV" ? "http://127.0.0.1:8080" : "prod_stuff"
+
 const ListVens: React.FC<ListVensProps> = ({ vens, fetchAllVens }) => {
   const [result, setResult] = useState<{ status: string, message: string } | null>(null);
 
@@ -34,7 +37,7 @@ const ListVens: React.FC<ListVensProps> = ({ vens, fetchAllVens }) => {
 
   const handleRemove = async (venName: string) => {
     try {
-      const response = await axios.post('http://127.0.0.1:8080/api/remove_ven', { venName });
+      const response = await axios.post(`${urlBase}/api/remove_ven`, { venName });
       setResult({ status: response.data.status, message: response.data.message });
       fetchAllVens();  // Refresh the list after removing a VEN
     } catch (error) {

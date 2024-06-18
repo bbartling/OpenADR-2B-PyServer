@@ -7,6 +7,14 @@ from pathlib import Path
 from collections import deque
 from datetime import datetime, timedelta
 
+# expected VEN check-in interval in seconds
+EXPECTED_INTERVAL = 10
+# define a threshold for a "missed" check-in
+MAX_INTERVAL = EXPECTED_INTERVAL * 2
+# tolerance in seconds for connection qual calc
+# if its within tolerance then connection calc is 100%
+CHECKIN_TOLERANCE = 2
+
 VenInfo = namedtuple("VenInfo", ["ven_name", "ven_id", "registration_id", "last_report", "last_report_units", "last_report_time", "check_in_times"])
 
 class DuplicateVenError(Exception):
@@ -99,10 +107,17 @@ class VenRegistry:
             (check_in_times[i] - check_in_times[i-1]).total_seconds()
             for i in range(1, len(check_in_times))
         ]
-        expected_interval = 10  # expected check-in interval in seconds
-        max_interval = expected_interval * 2  # define a threshold for a "missed" check-in
-        valid_intervals = [interval for interval in intervals if interval <= max_interval]
-        connection_quality = len(valid_intervals) / len(intervals) * 100
+
+        valid_intervals = [interval for interval in intervals if interval <= MAX_INTERVAL]
+        valid_intervals_avg = sum(valid_intervals) / len(valid_intervals)
+
+        if abs(valid_intervals_avg - EXPECTED_INTERVAL) > CHECKIN_TOLERANCE:
+            connection_quality = len(valid_intervals) / len(intervals) * 100
+        else:
+            connection_quality = 100.00
+
+        #print(f"valid_intervals_avg: {valid_intervals_avg}")
+        #print(f"connection_quality: {connection_quality}")
         return connection_quality
 
     def get_all_vens_with_quality(self):

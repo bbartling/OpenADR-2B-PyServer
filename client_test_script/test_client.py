@@ -36,7 +36,7 @@ async def run_ven(ven_name, vtn_url):
     client.add_report(callback=collect_report_value,
                       resource_id="device001",
                       measurement="voltage",
-                      sampling_rate=timedelta(seconds=20))
+                      sampling_rate=timedelta(seconds=10))
 
     # Add event handling capability to the client
     client.add_handler("on_event", handle_event)
